@@ -1,35 +1,61 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { STEPS } from './config/steps'
+import { IntroScreen } from './components/IntroScreen'
+import { StepScreen } from './components/StepScreen'
+import { FinalScreen } from './components/FinalScreen'
 
-function App() {
-  const [count, setCount] = useState(0)
+type Screen = 'intro' | 'step' | 'final'
+
+const FADE_DURATION = 300 // must match --transition-fade in theme.css
+
+export default function App() {
+  // currentStep is intentionally not persisted — page refresh always resets to intro
+  const [screen, setScreen] = useState<Screen>('intro')
+  const [stepIndex, setStepIndex] = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  const transition = (fn: () => void) => {
+    setVisible(false)
+    setTimeout(() => {
+      fn()
+      setVisible(true)
+    }, FADE_DURATION)
+  }
+
+  const handleStart = () => {
+    transition(() => {
+      setStepIndex(0)
+      setScreen('step')
+    })
+  }
+
+  const handleAdvance = () => {
+    transition(() => {
+      if (stepIndex < STEPS.length - 1) {
+        setStepIndex((i) => i + 1)
+      } else {
+        setScreen('final')
+      }
+    })
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      <div className={`fade-wrapper ${visible ? 'fade-in' : 'fade-out'}`}>
+        {screen === 'intro' && <IntroScreen onStart={handleStart} />}
+
+        {screen === 'step' && (
+          <StepScreen
+            key={stepIndex}
+            step={STEPS[stepIndex]}
+            stepNumber={stepIndex + 1}
+            totalSteps={STEPS.length}
+            onAdvance={handleAdvance}
+          />
+        )}
+
+        {screen === 'final' && <FinalScreen />}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
-
-export default App
