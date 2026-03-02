@@ -8,22 +8,17 @@ interface StepScreenProps {
   onAdvance: () => void
 }
 
-export function StepScreen({ step, stepNumber, totalSteps, onAdvance }: StepScreenProps) {
+export function StepScreen({ step, onAdvance }: StepScreenProps) {
   const [inputValue, setInputValue] = useState('')
   const type = step.type ?? 'button'
 
   return (
     <div className="screen-content">
-      <span className="step-counter">
-        {stepNumber} / {totalSteps}
-      </span>
-
-      <h2 className="step-title">{step.title}</h2>
       <p className="step-description">{step.description}</p>
 
       {type === 'button' && (
         <button className="btn-primary" onClick={onAdvance}>
-          Continue
+          Siguiente
         </button>
       )}
 

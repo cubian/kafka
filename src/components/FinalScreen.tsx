@@ -19,10 +19,10 @@ export function FinalScreen() {
     let current = 0
     const interval = setInterval(() => {
       const remaining = 97 - current
-      const increment = Math.max(remaining * 0.05, 0.001)
+      const increment = Math.max(remaining * 0.015, 0.001)
       current = Math.min(current + increment, 97)
       setProgress(current)
-    }, 100)
+    }, 150)
     return () => clearInterval(interval)
   }, [])
 
@@ -38,8 +38,7 @@ export function FinalScreen() {
 
   return (
     <div className="screen-content">
-      <h2 className="final-title">Results</h2>
-      <p className="final-subtitle">Your performance is being evaluated.</p>
+      <p className="final-subtitle">Enhorabuena, has completado todas las acciones. Tu puntuación es…</p>
 
       <div className="progress-container">
         <div className="progress-bar" style={{ width: `${progress}%` }} />
