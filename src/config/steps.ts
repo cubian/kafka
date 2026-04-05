@@ -15,7 +15,7 @@ export const STEPS: Step[] = [
   },
   {
     id: 'step-2',
-    description: 'Camina muy lento hasta la pared más cercana y tócala con la frente, como si intentaras entender los límites de tu habitación.',
+    description: 'Ahora camina muy lento hasta la pared más cercana y tócala con la frente, como si intentaras entender los límites de tu habitación.',
     type: 'button',
   },
   {
@@ -40,7 +40,7 @@ export const STEPS: Step[] = [
   },
   {
     id: 'step-7',
-    description: 'Sal al exterior unos segundos y saluda a un desconocidx.',
+    description: 'Sal al exterior unos segundos y saluda a unx desconocidx.',
     type: 'button',
   },
   {
@@ -55,7 +55,7 @@ export const STEPS: Step[] = [
   },
   {
     id: 'step-10',
-    description: 'Ábrela cámara y mírate durante al menos 10 segundos antes de continuar.',
+    description: 'Abre la cámara y hazte una foto. Obsérvala durante otros 10 segundos antes de continuar.',
     type: 'camera',
   },
   {
