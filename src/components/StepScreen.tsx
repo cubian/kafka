@@ -10,6 +10,8 @@ interface StepScreenProps {
 
 function CameraView({ onAdvance }: { onAdvance: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rafRef = useRef<number>(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -18,42 +20,57 @@ function CameraView({ onAdvance }: { onAdvance: () => void }) {
       .getUserMedia({ video: { facingMode: 'user' } })
       .then((s) => {
         stream = s
-        if (videoRef.current) videoRef.current.srcObject = s
+        const video = videoRef.current!
+        video.srcObject = s
+        video.play().catch(() => {})
       })
       .catch(() => setError('No se ha podido acceder a la cámara.'))
-    return () => stream?.getTracks().forEach((t) => t.stop())
+    return () => {
+      stream?.getTracks().forEach((t) => t.stop())
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const video = videoRef.current!
+    const canvas = canvasRef.current!
+    const ctx = canvas.getContext('2d')!
+
+    const draw = (t: number) => {
+      if (video.readyState >= 2 && video.videoWidth > 0) {
+        const w = video.videoWidth
+        const h = video.videoHeight
+        if (canvas.width !== w) { canvas.width = w; canvas.height = h }
+
+        const time = t * 0.001
+        const sliceH = 3
+
+        ctx.clearRect(0, 0, w, h)
+
+        for (let y = 0; y < h; y += sliceH) {
+          const offsetX = Math.sin(y * 0.035 + time * 1.4) * 14 + Math.sin(y * 0.018 + time * 0.6) * 9
+          // draw mirrored slice: flip x by drawing from right to left
+          ctx.save()
+          ctx.translate(w, 0)
+          ctx.scale(-1, 1)
+          ctx.drawImage(video, 0, y, w, sliceH, offsetX, y, w, sliceH)
+          ctx.restore()
+        }
+      }
+      rafRef.current = requestAnimationFrame(draw)
+    }
+
+    rafRef.current = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
   return (
     <div className="camera-container">
-      {/* SVG filter definition — invisible, just declares the distortion */}
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <filter id="wave-distort" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="turbulence" baseFrequency="0.012 0.025" numOctaves="3" result="noise">
-              <animate
-                attributeName="baseFrequency"
-                values="0.01 0.02; 0.02 0.045; 0.01 0.02"
-                dur="7s"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
-
+      <video ref={videoRef} autoPlay playsInline muted style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
       {error ? (
         <p className="step-description">{error}</p>
       ) : (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="camera-feed"
-          style={{ filter: 'url(#wave-distort)' }}
-        />
+        <canvas ref={canvasRef} className="camera-feed" />
       )}
       <button className="btn-primary" onClick={onAdvance}>
         Siguiente
