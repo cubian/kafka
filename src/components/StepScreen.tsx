@@ -13,6 +13,24 @@ function CameraView({ onAdvance }: { onAdvance: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const [error, setError] = useState<string | null>(null)
+  const [photoTaken, setPhotoTaken] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const takePhoto = async () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    setUploading(true)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+    const formData = new FormData()
+    formData.append('file', dataUrl)
+    formData.append('upload_preset', 'kafka-images')
+    await fetch('https://api.cloudinary.com/v1_1/ddm2thmsx/image/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    setUploading(false)
+    setPhotoTaken(true)
+  }
 
   useEffect(() => {
     let stream: MediaStream
@@ -72,9 +90,14 @@ function CameraView({ onAdvance }: { onAdvance: () => void }) {
       ) : (
         <canvas ref={canvasRef} className="camera-feed" />
       )}
-      <button className="btn-primary" onClick={onAdvance}>
-        Siguiente
+      <button className="btn-primary" onClick={takePhoto} disabled={uploading || photoTaken}>
+        {uploading ? 'Subiendo...' : photoTaken ? 'Foto guardada' : 'Hacerse una foto'}
       </button>
+      {photoTaken && (
+        <button className="btn-primary" onClick={onAdvance}>
+          Siguiente
+        </button>
+      )}
     </div>
   )
 }
