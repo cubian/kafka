@@ -20,6 +20,7 @@ function CameraView({ onAdvance }: { onAdvance: () => void }) {
     const canvas = canvasRef.current
     if (!canvas) return
     setUploading(true)
+    cancelAnimationFrame(rafRef.current)
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
     const formData = new FormData()
     formData.append('file', dataUrl)
